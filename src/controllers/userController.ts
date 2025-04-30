@@ -4,7 +4,9 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODExYWU0MzZjYTA0M2I1NzFmMzI4NjIiLCJyb2xlIjoidXNlciIsImlhdCI6MTc0NTk4OTE4NywiZXhwIjoxNzQ2ODUzMTg3fQ.kqYEbCkjUrDigVVh5wmk8bCgVy1w_-lcrbU3p0AXqLc
+
+////eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODExYWU0MzZjYTA0M2I1NzFmMzI4NjIiLCJyb2xlIjoidXNlciIsImlhdCI6MTc0NTk5MzU4NCwiZXhwIjoxNzQ2ODU3NTg0fQ.CBr8xxvcDFpN1HLVSQ9SBqIujzX-kw9QerX-XSj6v9Uexport const loginController = async (
+
 export const loginController = async (
   req: express.Request,
   res: express.Response
@@ -39,13 +41,13 @@ export const loginController = async (
         }
       );
 
-      res.send(200).send({
+      res.status(200).send({
         message: "success",
         status: "success",
-        data: login,
+        token: userToken,
       });
     } else {
-      res.send(200).send({
+      res.status(404).send({
         message: "error",
         status: "failed",
       });
