@@ -105,3 +105,10 @@ export const registerController = async (
     });
   }
 };
+
+export const updateInfo = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  res.send("Update request");
+};
