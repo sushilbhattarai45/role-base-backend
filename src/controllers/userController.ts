@@ -22,32 +22,42 @@ export const loginController = async (
     if (!serverToken) {
       throw new Error("Server Error");
     }
+
     const login = await prisma.user.findFirst({
       where: {
         email: email,
-        password: password,
+        // password: password,
       },
     });
     if (login) {
-      const userToken = jwt.sign(
-        {
-          userId: login?.id,
-          role: "user",
-        },
+      let compare = await bcrypt.compare(password, login.password);
+      if (compare) {
+        const userToken = jwt.sign(
+          {
+            userId: login?.id,
+            role: "user",
+          },
 
-        serverToken,
-        {
-          expiresIn: "10d",
-        }
-      );
+          serverToken,
+          {
+            expiresIn: "10d",
+          }
+        );
 
-      res.status(200).send({
-        message: "success",
-        status: "success",
-        token: userToken,
-      });
+        res.status(200).send({
+          message: "success",
+          status: "success",
+          token: userToken,
+          compare: compare,
+        });
+      } else {
+        res.status(401).send({
+          message: "Wrong Password",
+          status: "failed",
+        });
+      }
     } else {
-      res.status(404).send({
+      res.status(401).send({
         message: "error",
         status: "failed",
       });
@@ -61,7 +71,7 @@ export const registerController = async (
   req: express.Request,
   res: express.Response
 ) => {
-  if (!req.body.name || !req.body.password) {
+  if (!req.body.email || !req.body.password) {
     throw new Error("No data");
   }
   const serverToken = process.env.JWT_TOKEN;
@@ -70,17 +80,28 @@ export const registerController = async (
   }
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-
-  const user = await prisma.user.create({
-    data: {
-      name: req.body.name,
+  const checkExisting = await prisma.user.findFirst({
+    where: {
       email: req.body.email,
-      password: hashedPassword,
     },
   });
+  if (checkExisting) {
+    res.status(409).send({
+      message: "Email already exists",
+      status: "failed",
+    });
+  } else {
+    const user = await prisma.user.create({
+      data: {
+        name: req.body.name,
+        email: req.body.email,
+        password: hashedPassword,
+      },
+    });
 
-  res.status(200).send({
-    message: "Succesfully registered",
-    status: "success",
-  });
+    res.status(200).send({
+      message: "Succesfully registered",
+      status: "success",
+    });
+  }
 };
