@@ -5,17 +5,20 @@ export const uploadImage = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const uploadResult = await cloudinary.uploader
-    .upload(
-      "https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg",
-      {
+  try {
+    if (!req.file) {
+      res.send("Nop file");
+      return;
+    }
+    const uploadResult = await cloudinary.uploader
+      .upload(req.file.path, {
         public_id: "shoes",
-      }
-    )
-    .catch((error) => {
-      console.log(error);
-    });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
-  console.log(uploadResult);
-  res.send(uploadResult);
+    console.log(uploadResult);
+    res.send(uploadResult);
+  } catch (e) {}
 };
