@@ -13,24 +13,27 @@ export const loginController = async (
 ) => {
   try {
     if (!req.body.email || !req.body.password) {
-      throw new Error("No data");
+      res.status(400).send({
+        message: "Invalid Inputs",
+      });
+      return;
     }
-    const email = req.body.email;
-    const password = req.body.password;
+
     const serverToken = process.env.JWT_TOKEN;
     console.log(req.body);
+
     if (!serverToken) {
-      throw new Error("Server Error");
+      res.status(500).send("Server Error");
+      return;
     }
 
     const login = await prisma.user.findFirst({
       where: {
-        email: email,
-        // password: password,
+        email: req.body.email,
       },
     });
     if (login) {
-      let compare = await bcrypt.compare(password, login.password);
+      let compare = await bcrypt.compare(req.body.password, login.password);
       if (compare) {
         const userToken = jwt.sign(
           {
@@ -48,7 +51,6 @@ export const loginController = async (
           message: "success",
           status: "success",
           token: userToken,
-          compare: compare,
         });
       } else {
         res.status(401).send({
@@ -71,37 +73,48 @@ export const registerController = async (
   req: express.Request,
   res: express.Response
 ) => {
-  if (!req.body.email || !req.body.password) {
-    throw new Error("No data");
-  }
-  const serverToken = process.env.JWT_TOKEN;
-  if (!serverToken) {
-    throw new Error("Server Error");
-  }
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-  const checkExisting = await prisma.user.findFirst({
-    where: {
-      email: req.body.email,
-    },
-  });
-  if (checkExisting) {
-    res.status(409).send({
-      message: "Email already exists",
-      status: "failed",
-    });
-  } else {
-    const user = await prisma.user.create({
-      data: {
-        name: req.body.name,
+  try {
+    if (!req.body.email || !req.body.password) {
+      res.status(400).send({
+        message: "Invalid Inputs",
+      });
+      return;
+    }
+    const serverToken = process.env.JWT_TOKEN;
+    if (!serverToken) {
+      res.status(500).send("Server Error");
+      return;
+    }
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+    const checkExisting = await prisma.user.findFirst({
+      where: {
         email: req.body.email,
-        password: hashedPassword,
       },
     });
+    if (checkExisting) {
+      res.status(409).send({
+        message: "Email already exists",
+        status: "failed",
+      });
+    } else {
+      const user = await prisma.user.create({
+        data: {
+          name: req.body.name,
+          email: req.body.email,
+          password: hashedPassword,
+        },
+      });
 
-    res.status(200).send({
-      message: "Succesfully registered",
-      status: "success",
+      res.status(200).send({
+        message: "Succesfully registered",
+        status: "success",
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "Server Error",
+      status: "failed",
     });
   }
 };
@@ -110,5 +123,40 @@ export const updateInfo = async (
   req: express.Request,
   res: express.Response
 ) => {
-  res.send("Update request");
+  console.log(req.user);
+  try {
+    if (!req?.body?.name) {
+      res.status(400).send({
+        message: "Invalid Inputs",
+      });
+    }
+
+    let updateData = await prisma.user.update({
+      where: {
+        id: req.user.userId,
+      },
+
+      data: {
+        name: req.body.name,
+      },
+    });
+
+    if (updateData) {
+      res.status(200).send({
+        message: "Update successfull",
+        status: "success",
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "Server Error",
+      status: "failed",
+    });
+  }
+
+  // const login = await prisma.user.findFirst({
+  //   where: {
+  //     email: req.body.email,
+  //   },
+  // });
 };

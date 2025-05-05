@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import userRoutes from "./src/routes/userRoutes";
-
+import imageRoutes from "./src/routes/imageRoutes";
 const App = express();
 App.use(cors());
 App.use(express.json());
@@ -14,3 +14,4 @@ App.listen(3000, () => {
 // });
 
 App.use("/user", userRoutes);
+App.use("/image", imageRoutes);

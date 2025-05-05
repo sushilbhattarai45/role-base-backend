@@ -1,6 +1,15 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 
+// Extend Express Request type to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user: any;
+    }
+  }
+}
+
 export const AuthMiddleware = (
   req: express.Request,
   res: express.Response,
@@ -17,14 +26,16 @@ export const AuthMiddleware = (
     }
 
     if (!jwtToken) {
-      res.status(500).json({ error: "JWT secret is not configured" });
+      res.status(500).json({ error: "Token is not configured: Server Error" });
       return;
     }
 
-    jwt.verify(token, jwtToken);
+    const decoded = jwt.verify(token, jwtToken);
+    // Attach decoded data to request
+    req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ error: "Invalid token" });
+    res.status(401).json({ error: "Invalid/Expired token" });
     return;
   }
 };

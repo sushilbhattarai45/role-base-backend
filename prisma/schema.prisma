@@ -19,3 +19,10 @@ model User{
   password String
 
 }
+
+model Image{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl String
+  cloudId String
+  uploadedBy String
+}
