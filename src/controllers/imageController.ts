@@ -51,21 +51,57 @@ export const uploadImage = async (
 export const getImage = async (req: express.Request, res: express.Response) => {
   try {
     console.log(req.user.userId);
-    const check = await prisma.image.findMany({
+    const images = await prisma.image.findMany({
       where: {
         uploadedBy: req.user.userId,
       },
     });
-    if (check) {
+    if (images.length > 0) {
       res.status(200).send({
-        data: check,
+        data: images,
         status: "success",
         message: "success",
       });
     } else {
       res.status(404).send({
         message: "No data found",
+        status: "failed",
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "Internal server error",
+      status: "failed",
+    });
+  }
+};
+
+export const deleteImage = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    if (!req?.body?.imageId) {
+      res.status(400).send({
+        message: "No image Id",
+        status: "failed",
+      });
+      return;
+    }
+    const check = await prisma.image.delete({
+      where: {
+        id: req.body.imageId,
+      },
+    });
+    if (check) {
+      res.status(200).send({
         status: "success",
+        message: "deleted Successfully",
+      });
+    } else {
+      res.status(404).send({
+        message: "No data found",
+        status: "failed",
       });
     }
   } catch (err) {

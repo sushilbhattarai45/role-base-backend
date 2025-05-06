@@ -1,7 +1,12 @@
 import express from "express";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
-import { getImage, uploadImage } from "../controllers/imageController";
+import {
+  deleteImage,
+  getImage,
+  uploadImage,
+} from "../controllers/imageController";
 import { uploadImageMidd } from "../middlewares/imageMiddleware";
+import { AdminMiddleware } from "../middlewares/adminMiddleware";
 const router = express.Router();
 
 const ImageHandler = (
@@ -22,5 +27,6 @@ const ImageHandler = (
 
 router.route("/upload").post(AuthMiddleware, ImageHandler);
 router.route("/get").get(AuthMiddleware, getImage);
+router.route("/delete").get(AuthMiddleware, AdminMiddleware, deleteImage);
 
 export default router;

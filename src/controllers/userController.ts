@@ -38,7 +38,7 @@ export const loginController = async (
         const userToken = jwt.sign(
           {
             userId: login?.id,
-            role: "user",
+            role: "admin",
           },
 
           serverToken,
