@@ -47,3 +47,31 @@ export const uploadImage = async (
       .send({ message: "Internal server errors", status: "failed" });
   }
 };
+
+export const getImage = async (req: express.Request, res: express.Response) => {
+  try {
+    console.log(req.user.userId);
+    const check = await prisma.image.findMany({
+      where: {
+        uploadedBy: req.user.userId,
+      },
+    });
+    if (check) {
+      res.status(200).send({
+        data: check,
+        status: "success",
+        message: "success",
+      });
+    } else {
+      res.status(404).send({
+        message: "No data found",
+        status: "success",
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "Internal server error",
+      status: "failed",
+    });
+  }
+};
