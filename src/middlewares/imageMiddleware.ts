@@ -17,7 +17,7 @@ const filterFile = (req: any, file: any, cb: any) => {
     cb(null, true);
   } else {
     // res.status(400).send("Incorrect File Format")
-    cb(new Error("Invalid file type"), false);
+    cb(new Error("Invalid file type or Multiple files"), false);
   }
 };
 

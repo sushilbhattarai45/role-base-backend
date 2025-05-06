@@ -7,8 +7,9 @@ export const uploadImage = async (
   res: express.Response
 ) => {
   try {
+    console.log(req.user);
     if (!req.file) {
-      res.send("Nop file");
+      res.status(400).send({ message: "No file Attached", status: "failed" });
       return;
     }
     const uploadResult = await cloudinary.uploader
@@ -25,7 +26,8 @@ export const uploadImage = async (
         data: {
           imageUrl: uploadResult.url,
           cloudId: uploadResult.asset_id,
-          uploadedBy: "user",
+          uploadedBy: req.user.userId,
+          role: "user",
         },
       });
       if (updateToDB) {
