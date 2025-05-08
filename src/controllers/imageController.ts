@@ -118,8 +118,9 @@ export const paginatingImages = async (
   res: express.Response
 ) => {
   try {
-    const page = Number(req.query.page) || 3;
-    const limit = Number(req.query.limit) || 2;
+    const page = Number(req.body.page) || 1;
+
+    const limit = Number(req.body.limit) || 2;
     const skip = (page - 1) * limit;
 
     const [images, total] = await Promise.all([
@@ -140,7 +141,6 @@ export const paginatingImages = async (
       });
       return;
     }
-
     res.status(200).send({
       data: images,
       status: "success",
