@@ -93,6 +93,7 @@ export const deleteImage = async (
         id: req.body.imageId,
       },
     });
+
     if (check) {
       res.status(200).send({
         status: "success",
@@ -117,13 +118,47 @@ export const paginatingImages = async (
   res: express.Response
 ) => {
   try {
-    const page = req.body.page || 1;
-    const limit = req.body.lmit || 1;
-    const sortBy = req.body.sortBy || "asc";
+    const page = Number(req.query.page) || 3;
+    const limit = Number(req.query.limit) || 2;
+    const skip = (page - 1) * limit;
+
+    const [images, total] = await Promise.all([
+      prisma.image.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          id: "desc",
+        },
+      }),
+      prisma.image.count(),
+    ]);
+
+    if (images.length === 0) {
+      res.status(404).send({
+        message: "No images found",
+        status: "failed",
+      });
+      return;
+    }
+
+    res.status(200).send({
+      data: images,
+      status: "success",
+      message: "Images retrieved successfully",
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+    return;
   } catch (err) {
+    console.error("Pagination error:", err);
     res.status(500).send({
       message: "Internal server error",
       status: "failed",
     });
+    return;
   }
 };

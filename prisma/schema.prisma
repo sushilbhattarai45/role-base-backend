@@ -25,5 +25,5 @@ model Image{
   imageUrl String
   cloudId String
   uploadedBy String
-  role String
+  role String?
 }

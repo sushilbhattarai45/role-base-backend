@@ -3,6 +3,7 @@ import { AuthMiddleware } from "../middlewares/authMiddleware";
 import {
   deleteImage,
   getImage,
+  paginatingImages,
   uploadImage,
 } from "../controllers/imageController";
 import { uploadImageMidd } from "../middlewares/imageMiddleware";
@@ -28,5 +29,6 @@ const ImageHandler = (
 router.route("/upload").post(AuthMiddleware, ImageHandler);
 router.route("/get").get(AuthMiddleware, getImage);
 router.route("/delete").get(AuthMiddleware, AdminMiddleware, deleteImage);
+router.route("/paginate").get(AuthMiddleware, paginatingImages);
 
 export default router;
