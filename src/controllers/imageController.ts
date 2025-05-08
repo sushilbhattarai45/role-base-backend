@@ -111,3 +111,19 @@ export const deleteImage = async (
     });
   }
 };
+
+export const paginatingImages = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const page = req.body.page || 1;
+    const limit = req.body.lmit || 1;
+    const sortBy = req.body.sortBy || "asc";
+  } catch (err) {
+    res.status(500).send({
+      message: "Internal server error",
+      status: "failed",
+    });
+  }
+};
