@@ -2,6 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { errorHandler, ApiError } from "../middlewares/errorHandler";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,8 @@ const prisma = new PrismaClient();
 
 export const loginController = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
 ) => {
   try {
     if (!req.body.email || !req.body.password) {
@@ -53,10 +55,7 @@ export const loginController = async (
           token: userToken,
         });
       } else {
-        res.status(401).send({
-          message: "Wrong Password",
-          status: "failed",
-        });
+        throw new ApiError("Wrong Password", 400);
       }
     } else {
       res.status(401).send({
@@ -65,7 +64,7 @@ export const loginController = async (
       });
     }
   } catch (e) {
-    res.send("error ");
+    next(e);
   }
 };
 
