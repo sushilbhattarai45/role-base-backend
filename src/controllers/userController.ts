@@ -15,31 +15,30 @@ export const loginController = async (
 ) => {
   try {
     if (!req.body.email || !req.body.password) {
-      res.status(400).send({
-        message: "Invalid Inputs",
-      });
-      return;
+      throw new ApiError("Fields are Required", 400);
     }
 
     const serverToken = process.env.JWT_TOKEN;
     console.log(req.body);
 
     if (!serverToken) {
-      res.status(500).send("Server Error");
-      return;
+      throw new Error("Invalid Server Token");
     }
 
-    const login = await prisma.user.findFirst({
+    const userExists = await prisma.user.findFirst({
       where: {
         email: req.body.email,
       },
     });
-    if (login) {
-      let compare = await bcrypt.compare(req.body.password, login.password);
+    if (userExists) {
+      let compare = await bcrypt.compare(
+        req.body.password,
+        userExists.password
+      );
       if (compare) {
         const userToken = jwt.sign(
           {
-            userId: login?.id,
+            userId: userExists?.id,
             role: "admin",
           },
 
@@ -56,13 +55,10 @@ export const loginController = async (
           token: userToken,
         });
       } else {
-        throw new ApiError("Wrong Password", 4001);
+        throw new ApiError("Wrong Password", 400);
       }
     } else {
-      res.status(401).send({
-        message: "error",
-        status: "failed",
-      });
+      throw new ApiError("User doesn't exist with the username", 400);
     }
   } catch (e) {
     next(e);
@@ -71,19 +67,16 @@ export const loginController = async (
 
 export const registerController = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
 ) => {
   try {
     if (!req.body.email || !req.body.password) {
-      res.status(400).send({
-        message: "Invalid Inputs",
-      });
-      return;
+      throw new ApiError("Fields are Required", 400);
     }
     const serverToken = process.env.JWT_TOKEN;
     if (!serverToken) {
-      res.status(500).send("Server Error");
-      return;
+      throw new Error("Missing Server Token");
     }
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
@@ -93,10 +86,7 @@ export const registerController = async (
       },
     });
     if (checkExisting) {
-      res.status(409).send({
-        message: "Email already exists",
-        status: "failed",
-      });
+      throw new ApiError("Email Already Exists", 400);
     } else {
       const user = await prisma.user.create({
         data: {
@@ -112,10 +102,7 @@ export const registerController = async (
       });
     }
   } catch (err) {
-    res.status(500).send({
-      message: "Server Error",
-      status: "failed",
-    });
+    next(err);
   }
 };
 

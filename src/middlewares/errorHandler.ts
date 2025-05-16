@@ -23,7 +23,7 @@ export const errorHandler = (
     });
   } else {
     return res.status(500).send({
-      message: "Internal Error",
+      message: err.message ? err.message : "Internal Error",
     });
   }
 };

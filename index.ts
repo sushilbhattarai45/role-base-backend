@@ -9,7 +9,7 @@ App.use(cors(corsConfig));
 App.use(express.json());
 
 App.listen(3001, () => {
-  console.log("Listening to 3000");
+  console.log("Listening to 3001");
 });
 
 App.use("/user", userRoutes);
