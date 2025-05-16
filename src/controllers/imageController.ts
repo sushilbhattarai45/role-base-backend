@@ -1,6 +1,7 @@
 import express from "express";
 import { cloudinary } from "../config/cloudinaryConfig";
 import { PrismaClient } from "@prisma/client";
+import { ApiError } from "../middlewares/errorHandler";
 const prisma = new PrismaClient();
 export const uploadImage = async (
   req: express.Request,
@@ -48,7 +49,11 @@ export const uploadImage = async (
   }
 };
 
-export const getImage = async (req: express.Request, res: express.Response) => {
+export const getImage = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     console.log(req.user.userId);
     const images = await prisma.image.findMany({
@@ -63,30 +68,21 @@ export const getImage = async (req: express.Request, res: express.Response) => {
         message: "success",
       });
     } else {
-      res.status(404).send({
-        message: "No data found",
-        status: "failed",
-      });
+      throw new ApiError("No Data Found", 400);
     }
   } catch (err) {
-    res.status(500).send({
-      message: "Internal server error",
-      status: "failed",
-    });
+    next(err);
   }
 };
 
 export const deleteImage = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
 ) => {
   try {
     if (!req?.body?.imageId) {
-      res.status(400).send({
-        message: "No image Id",
-        status: "failed",
-      });
-      return;
+      throw new ApiError("No Image ID", 400);
     }
     const check = await prisma.image.delete({
       where: {
@@ -100,22 +96,17 @@ export const deleteImage = async (
         message: "deleted Successfully",
       });
     } else {
-      res.status(404).send({
-        message: "No data found",
-        status: "failed",
-      });
+      throw new ApiError("No Data Found", 400);
     }
   } catch (err) {
-    res.status(500).send({
-      message: "Internal server error",
-      status: "failed",
-    });
+    next(err);
   }
 };
 
 export const paginatingImages = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  next: express.NextFunction
 ) => {
   try {
     const page = Number(req.body.page) || 1;
@@ -135,11 +126,7 @@ export const paginatingImages = async (
     ]);
 
     if (images.length === 0) {
-      res.status(404).send({
-        message: "No images found",
-        status: "failed",
-      });
-      return;
+      throw new ApiError("No Data Found", 400);
     }
     res.status(200).send({
       data: images,
@@ -154,11 +141,6 @@ export const paginatingImages = async (
     });
     return;
   } catch (err) {
-    console.error("Pagination error:", err);
-    res.status(500).send({
-      message: "Internal server error",
-      status: "failed",
-    });
-    return;
+    next(err);
   }
 };
