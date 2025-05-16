@@ -48,6 +48,7 @@ export const loginController = async (
             expiresIn: "10d",
           }
         );
+        console.log(req.user);
 
         res.status(200).send({
           message: "success",
@@ -55,7 +56,7 @@ export const loginController = async (
           token: userToken,
         });
       } else {
-        throw new ApiError("Wrong Password", 400);
+        throw new ApiError("Wrong Password", 4001);
       }
     } else {
       res.status(401).send({

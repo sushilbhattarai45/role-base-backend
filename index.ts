@@ -8,7 +8,7 @@ const App = express();
 App.use(cors(corsConfig));
 App.use(express.json());
 
-App.listen(3000, () => {
+App.listen(3001, () => {
   console.log("Listening to 3000");
 });
 
